@@ -18,6 +18,58 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let _ = (scene as? UIWindowScene) else { return }
     }
+    
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let url = URLContexts.first?.url else { return }
+        //ioshr://navagation?name=jake&age=8
+        let urlstring = url.absoluteString
+
+        print("url scheme : %@",url.scheme) //ioshr
+        print(url.host) //navagation
+        print(urlstring) //ioshr://navagation?name=jake&age=8
+        print(url.query) //name=jake&age=8
+    
+        let components = URLComponents(string: urlstring)
+        let urlquery = components?.queryItems ?? []
+        print(urlquery)
+     
+        var dictionaryData = [String: String]()
+        urlquery.forEach { dictionaryData[$0.name] = $0.value }
+        print(dictionaryData)
+        let agevalue = urlquery[1].value
+        print(agevalue)
+        connectStoryboard(url: url)
+        
+        
+    
+      }
+    
+    func connectStoryboard (url : URL)
+    {
+        let urlstring = url.absoluteString
+        let components = URLComponents(string: urlstring)
+        let urlquery = components?.queryItems ?? []
+        var agevalue = urlquery[1].value ?? ""
+        var namevalue = urlquery[0].value ?? ""
+        
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard let rootVC = storyboard.instantiateViewController(identifier: "MainVC") as? MainController
+                else {
+                    print("뷰 컨트롤러 확인 실패")
+                    return
+                }
+            
+                let rootNC = UINavigationController(rootViewController: rootVC)
+                self.window?.rootViewController = rootNC
+                self.window?.makeKeyAndVisible()
+        
+        let topViewController = self.window?.rootViewController as? UINavigationController
+        let currentVC = topViewController?.topViewController as? MainController
+                        
+                        // 뷰 컨트롤러 : url 스키마로 접속을 체크하는 곳으로 데이터 전송
+        currentVC?.urlSchemeCheck(_name: namevalue, _age: agevalue)
+    
+    }
 
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.
